@@ -27,6 +27,7 @@
 ## Open Questions / Topics to Check 
 - Which ELB service to use, classic or application? (need to read)
 - Is a security group necessary when using ELB? (reading as well)
+- DNS
 
 ## Script: Tasks to Cover
 - Check if service is already existing, verify status
