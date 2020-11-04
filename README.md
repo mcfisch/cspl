@@ -6,7 +6,7 @@
 ## AWS Components
 - Elastic Load Balancer (Classic ~~or Application?~~) (done)
 - EC2 instance (Ubuntu) (done)
-- Security group to configure remote access~~?~~ (done)
+- Security group to configure remote access ~~?~~ (done)
 
 ## Other Components
 
