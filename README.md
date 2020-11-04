@@ -11,8 +11,8 @@
 ## Other Components
 
 ### In EC2 Ubuntu
-- NGINX inside EC2 Ubuntu (done, but for some reason only on second TF apply run)
-- HTML file ()
+- NGINX inside EC2 Ubuntu (done)
+- HTML file (echo'ing out after nginx install doesn't work, breaks nginx install: --> will implement seperate copy of prebuilt file instead)
 
 #### Additional Options
 - Autoscaling Group
