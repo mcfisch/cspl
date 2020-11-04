@@ -4,15 +4,15 @@
 ![CSPL General Schema](cspl_schema.png)
 
 ## AWS Components
-- Elastic Load Balancer (Classic or Application?)
-- EC2 instance (Ubuntu)
-- Security group to configure remote access?
+- Elastic Load Balancer (Classic ~~or Application?~~) (done)
+- EC2 instance (Ubuntu) (done)
+- Security group to configure remote access~~?~~ (done)
 
 ## Other Components
 
 ### In EC2 Ubuntu
-- NGINX inside EC2 Ubuntu
-- HTML file
+- NGINX inside EC2 Ubuntu (done, but for some reason only on second TF apply run)
+- HTML file ()
 
 #### Additional Options
 - Autoscaling Group
@@ -21,13 +21,17 @@
 
 ### Locally
 - BASH script to control overall process
-- Terraform to manage installation/maintenance
-- AWS-CLI for direct communication with AWS API
+- Terraform to manage installation/maintenance (in progress)
+- AWS-CLI for direct communication with AWS API (likely not necessary as TF has its own module for this)
+
+## Encountered Issues I need to solve
+- `terraform apply` fails when trying to install NGINX and echo'ing out the html file is enabled, need to find another way to submit the file
+- Generating dynamic SSH key doesn't work yet, but static keys do work
 
 ## Open Questions / Topics to Check 
-- Which ELB service to use, classic or application? (need to read)
-- Is a security group necessary when using ELB? (reading as well)
-- DNS
+- ~~Which ELB service to use, classic or application? (need to read)~~ classic ELB
+- ~~Is a security group necessary when using ELB? (reading as well)~~ yes, cec. groups necessary and implemented
+- DNS (probably unneeded here)
 
 ## Script: Tasks to Cover
 - Check if service is already existing, verify status
