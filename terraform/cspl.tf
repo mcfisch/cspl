@@ -87,7 +87,7 @@ resource "aws_instance" "cspl_web" {
             "sudo apt -y update",
             "sudo apt -y install nginx",
             "sudo service nginx start",
-            "sudo echo '<html><body><h1 style=\"display: flex; align-items: center\">Cisco SPL</h1></div></body></html>' > /var/www/html/index.html",
+            # "sudo echo '<html><body><div><h1>Cisco SPL</h1></div></body></html>' > /var/www/html/index.html",
         ]
     }
     connection {
