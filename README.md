@@ -30,7 +30,7 @@
 
 ## Open Questions / Topics to Check 
 - ~~Which ELB service to use, classic or application? (need to read)~~ classic ELB
-- ~~Is a security group necessary when using ELB? (reading as well)~~ yes, cec. groups necessary and implemented
+- ~~Is a security group necessary when using ELB? (reading as well)~~ yes, sec. groups necessary and implemented
 - DNS (probably unneeded here)
 
 ## Script: Tasks to Cover
