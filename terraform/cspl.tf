@@ -1,12 +1,11 @@
-# AWS options (creds stored in local AWS config)
-variable "region" {
-  default = "us-west-1"
-}
+# variable "region" {
+#     default = "us-west-1"
+# }
 
 provider "aws" {
     region  = var.region
     profile = "default"
-    shared_credentials_file = "~/.aws/credentials"
+    shared_credentials_file = local.public_key_path
 }
 
 resource "aws_key_pair" "ssh-key" {
@@ -70,23 +69,25 @@ resource "aws_security_group" "web" {
 
 # EC2 config
 # (AMI ID for latest Ubuntu 20.04 from https://cloud-images.ubuntu.com/locator/ec2/)
-resource "aws_instance" "cspl_web" {
-    data "aws_ami" "ubuntu" {
-        most_recent = true
+data "aws_ami" "ubuntu" {
+    most_recent = true
 
-        filter {
-            name   = "name"
-            values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
-        }
-
-        filter {
-            name   = "virtualization-type"
-            values = ["hvm"]
-        }
-
-        owners = ["099720109477"]
+    filter {
+        name   = "name"
+        values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
     }
-  	instance_type	= "t2.nano"
+
+    filter {
+        name   = "virtualization-type"
+        values = ["hvm"]
+    }
+
+    owners = ["099720109477"]
+}
+
+resource "aws_instance" "cspl_web" {
+    ami           = data.aws_ami.ubuntu.id
+  	instance_type = "t2.nano"
 
     tags = {
         Name = "CSPL_Web"
@@ -95,7 +96,7 @@ resource "aws_instance" "cspl_web" {
     key_name        = "ssh-key"
     security_groups = [aws_security_group.web.name]
 
-    # Install NGINX
+    # Install NGINX with copied shel script
     user_data = file("install_nginx.sh")
 
     connection {
