@@ -52,6 +52,7 @@ check_tf_version() {
   TF_VERSION_INSTALLED="${TF_VERSION_INSTALLED[0]}.${TF_VERSION_INSTALLED[1]}"
   if ! awk 'BEGIN {exit !('${TF_VERSION_INSTALLED}' >= '${TF_VERSION_REQ}')}'; then
     echo "Error: please update to Terraform v${TF_VERSION_REQ} or newer."
+    exit ${EXIT_TF_OUTDATED}
   fi
 }
 
