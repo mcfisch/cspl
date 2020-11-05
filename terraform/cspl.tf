@@ -38,12 +38,12 @@ resource "aws_security_group" "elb" {
     }
 }
 
-resource "aws_security_group" "default" {
-    name = "default-security-group"
+resource "aws_security_group" "web" {
+    name = "web-security-group"
     description = "Accept SSH and HTTP requests"
 
     tags = {
-      "Name" = "Default Security Group"
+      "Name" = "Web Server Security Group"
     }
 
     ingress {
@@ -71,7 +71,21 @@ resource "aws_security_group" "default" {
 # EC2 config
 # (AMI ID for latest Ubuntu 20.04 from https://cloud-images.ubuntu.com/locator/ec2/)
 resource "aws_instance" "cspl_web" {
-  	ami 		    = "ami-00831fc7c1e3ddc60"
+    data "aws_ami" "ubuntu" {
+        most_recent = true
+
+        filter {
+            name   = "name"
+            values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
+        }
+
+        filter {
+            name   = "virtualization-type"
+            values = ["hvm"]
+        }
+
+        owners = ["099720109477"]
+    }
   	instance_type	= "t2.nano"
 
     tags = {
@@ -79,7 +93,7 @@ resource "aws_instance" "cspl_web" {
     }
 
     key_name        = "ssh-key"
-    security_groups = [aws_security_group.default.name]
+    security_groups = [aws_security_group.web.name]
 
     # Install NGINX
     user_data = file("install_nginx.sh")
