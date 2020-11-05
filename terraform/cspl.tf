@@ -11,7 +11,7 @@ provider "aws" {
 
 resource "aws_key_pair" "ssh-key" {
   key_name   = "ssh-key"
-  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC6rTTH+gGK9j4efn83dmnCdqi/m/p/UsHsw1gJwGoPAqtwj5jsvosGgNZigF6dnAK1FF+s+a3RKfUzpWIIv669Sg/hcIDqnIkYr6/gfFaRkDx8KFN2d8DZqSkKKjZlP/8cGvbcYNdRXUouVPiHHtk72tz1qSgGWZWlFMs3FGm62pfNh9Cz+lXn9CUPmzRx578/JUK2IpBhuY08bvh3AxCKoMwbhSseFvPHjKFsPaTQ4BGNyh9pviRTCm50BZHGe/9wS7fe3LMtqYMT1MGEf4yQ+zzPagShZAsLLrcVD0tVpzRQ5BH/t8PL2nILjqNBqoRyobS+q0IEDMbok0BuXYM+/dP/rza6veh5bAP6FD1V6Zht15Rr3ZInVDmTWCwzCdtO8Cto1rwcV/CK//wTxPVkuv7ctnl1Yb79zhtXAFR7pENb4DPZlsRG4rrRZjdX8ANPMnt9hchNeLbLaUN1DDUMzjSHXt0Ob3UL7V5/nhREkpb9CVMrE95UZ4b+A4P/QAs= mcfisch@all"
+  public_key = file("~/.ssh/id_rsa.pub")
 }
 
 # Security groups network access
@@ -78,18 +78,12 @@ resource "aws_instance" "cspl_web" {
         Name = "CSPL_Web"
     }
 
-    key_name = "ssh-key"
+    key_name        = "ssh-key"
     security_groups = [aws_security_group.default.name]
 
     # Install NGINX
-    provisioner "remote-exec" {
-        inline = [
-            "sudo apt -y update",
-            "sudo apt -y install nginx",
-            "sudo service nginx start",
-            # "sudo echo '<html><body><div><h1>Cisco SPL</h1></div></body></html>' > /var/www/html/index.html",
-        ]
-    }
+    user_data = file("install_nginx.sh")
+
     connection {
         type = "ssh"
         user = "ubuntu"
@@ -102,20 +96,31 @@ resource "aws_eip" "ip" {
 }
 
 # Configure ELB
+data "aws_availability_zones" "all" {}
+
 resource "aws_elb" "cspl_elb" {
     name = "cspl-elb"
     security_groups = [aws_security_group.elb.id]
     instances = [aws_instance.cspl_web.id]
-    availability_zones = ["us-west-1b", "us-west-1c"]
+    availability_zones = data.aws_availability_zones.all.names
+
     listener {
-        instance_port = 80
+        instance_port     = 80
         instance_protocol = "http"
-        lb_port = 80
-        lb_protocol = "http"
+        lb_port           = 80
+        lb_protocol       = "http"
+    }
+
+    health_check {
+        healthy_threshold   = 2
+        unhealthy_threshold = 2
+        timeout             = 3
+        target              = "HTTP:80/index.html"
+        interval            = 30
     }
 }
 
-# Return public IP and DNS
+# Return public IP and DNS Name
 output "ip" {
     value = aws_eip.ip.public_ip
 }
