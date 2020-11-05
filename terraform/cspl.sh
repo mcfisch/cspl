@@ -13,8 +13,9 @@ echo -e "\nUsage:
   $0 -h
 
 Options:
-  -m, --mode              Mode to ron Terraform on [default: 'plan']
-  -v, --vpc               Use a VPC for EC2 and ELB [default: off]
+  -m, --mode              Mode to run Terraform on [default: 'plan']
+  -v, --vpc [IP]          Use the give VPC for EC2 and ELB [default: off],
+                          IP defaults to '10.0.0.0' when 'vpc' submitted
   -a, --autoscale         Enable autoscaling [default: off]
   -c, --credentials-file  File with AWS credentials for dot-sourcing
   -k, --key-id            AWS Access Key ID (read from env by default)
@@ -30,7 +31,6 @@ EXIT_GOOD=0
 EXIT_GENERAL=1
 EXIT_FILE_NOT_FOUND=2
 EXIT_TF_NOT_FOUND=3
-EXIT_TF_OUTDATED=4
 
 read_aws_creds_file() {
   if [ ! -f $1 ] ; then
@@ -43,16 +43,10 @@ read_aws_creds_file() {
   export AWS_SECRET_ACCESS_KEY=${SECRET_KEY#*=}
 }
 
-check_tf_version() {
+check_tf_install() {
   if [ $(which terraform >/dev/null 2>&1) ] ; then
-    echo "ERROR: Terraform not installed"
+    echo "Error: Terraform not installed"
     exit ${EXIT_TF_NOT_FOUND}
-  fi
-  TF_VERSION_INSTALLED=($(terraform --version | head -1 | cut -d'v' -f2 | tr '.' ' '))
-  TF_VERSION_INSTALLED="${TF_VERSION_INSTALLED[0]}.${TF_VERSION_INSTALLED[1]}"
-  if ! awk 'BEGIN {exit !('${TF_VERSION_INSTALLED}' >= '${TF_VERSION_REQ}')}'; then
-    echo "Error: please update to Terraform v${TF_VERSION_REQ} or newer."
-    exit ${EXIT_TF_OUTDATED}
   fi
 }
 
@@ -97,12 +91,12 @@ while test -n "$1" ; do
   shift
 done
 
-
 if [ "${AWS_SECRET_ACCESS_KEY}" == "" -o "${AWS_ACCESS_KEY_ID}" == "" ] ; then
     echo "Error: AWS credentials not specified. Either store them in your environment or submit to the command using '-k' and '-s'."
     print_usage
     exit ${EXIT_GENERAL}
 fi
 
-check_tf_version
+check_tf_install
+
 exit ${EXIT_GENERAL}
