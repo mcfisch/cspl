@@ -85,6 +85,13 @@ data "aws_ami" "ubuntu" {
   owners = ["099720109477"]
 }
 
+data "template_file" "index_html" {
+  template = file("index.html.tpl")
+  vars = {
+    html_text = var.html_text
+  }
+}
+
 resource "aws_instance" "cspl_web" {
   ami           = data.aws_ami.ubuntu.id
   instance_type = "t2.nano"
@@ -96,13 +103,26 @@ resource "aws_instance" "cspl_web" {
   key_name        = "ssh-key"
   security_groups = [aws_security_group.web.name]
 
-  # Install NGINX with copied shel script
+  # Install NGINX with copied shell script
   user_data = file("install_nginx.sh")
 
   connection {
     type = "ssh"
     user = "ubuntu"
     host = self.public_ip
+  }
+
+  provisioner "file" {
+    content = data.template_file.index_html.rendered
+    destination = "/tmp/index.html"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "sudo mkdir -p /var/www/html",
+      "sudo cp /tmp/index.html /var/www/html/",
+      # "sudo chmod 444 /var/www/html/index.html"
+    ]
   }
 }
 
@@ -139,6 +159,7 @@ resource "aws_elb" "cspl_elb" {
 output "ip" {
   value = aws_eip.ip.public_ip
 }
+
 output "address" {
   value = aws_elb.cspl_elb.dns_name
 }
