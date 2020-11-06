@@ -1,42 +1,47 @@
 # CSPL - AWS Challenge for Cisco Application
-
-## General Schema
-![CSPL General Schema](cspl_schema.png)
+This project is meant to demonstrate the automated creation of a web server instance in AWS, connected to an Elastic Load Balancer (ELB).
 
 ## AWS Components
-- Elastic Load Balancer (Classic ~~or Application?~~) (done)
-- EC2 instance (Ubuntu) (done)
-- Security group to configure remote access ~~?~~ (done)
+- Elastic Load Balancer (Classic)
+- EC2 instance (Ubuntu)
+- Security groups to configure remote access
 
 ## Other Components
+- Terraform (v0.12) to do the actual setup
+- NGINX installed on Ubuntu EC2
 
-### In EC2 Ubuntu
-- NGINX inside EC2 Ubuntu (done)
-- HTML file (echo'ing out after nginx install doesn't work, breaks nginx install: --> will implement seperate copy of prebuilt file instead)
+## Local Requirements
+- Terraform v0.12 or higher
+- the following variables need to be set environmentally, optionally submit the path of an AWS CLI credential file to the Bash script
+  - AWS_ACCESS_KEY_ID
+  - AWS_SECRET_ACCESS_KEY_ID
+- execute the following to make sure Terraform has all necessary modules: `terraform init`
 
-#### Additional Options
-- Autoscaling Group
-- VPC definition
-- S3 Bucket to store status?
+## Usage
+```
+~$ ./cspl.sh --help
+Spin up an EC2 instance with an ELB in front of it. Optionally assign it a separate network, enable auto-scaling or specify a different text output.
 
-### Locally
-- BASH script to control overall process
-- Terraform to manage installation/maintenance (in progress)
-- AWS-CLI for direct communication with AWS API (likely not necessary as TF has its own module for this)
+Usage: 
+  ./cspl.sh [options]
+  ./cspl.sh [-m {plan|apply|destroy}]
+  ./cspl.sh [-v] [-a] [-t]
+  ./cspl.sh [-k <key_id>] [-s <secret_key>]
+  ./cspl.sh [-c <aws credentials file>]
+  ./cspl.sh -h
 
-## Encountered Issues I need to solve
-- `terraform apply` fails when trying to install NGINX and echo'ing out the html file is enabled, need to find another way to submit the file
-- Generating dynamic SSH key doesn't work yet, but static keys do work
+Options:
+  -m, --mode              Mode to run Terraform on [default: 'plan']
+  -v, --vpc [CIDR]        Use the give VPC for EC2 and ELB [default: off],
+                          'CIDR' defaults to '10.11.12.0/24' when omitted (TBD)
+  -a, --autoscale         Enable autoscaling [default: off] (TBD)
+  -c, --credentials-file  File with AWS credentials for dot-sourcing
+  -k, --key-id            AWS Access Key ID (read from env by default)
+  -s, --secret-key        AWS Secret Access Key (read from env by default)
+  -t, --text              Text to show on the index.html [default: 'Cisco SPL']
+  -h, --help              Show this message
+```
 
-## Open Questions / Topics to Check 
-- ~~Which ELB service to use, classic or application? (need to read)~~ classic ELB
-- ~~Is a security group necessary when using ELB? (reading as well)~~ yes, sec. groups necessary and implemented
-- DNS (probably unneeded here)
-
-## Script: Tasks to Cover
-- Check if service is already existing, verify status
-- Create/update/destroy ELB
-- Create/update/destroy EC2 instance (and attached security group if used)
-- If necessary update S3 with status
-- setup VPC if resp. parameter is set
-- configure Autoscaling if resp. parameter is set
+## Notes
+- The options `--vpc` and `--autoscale` have no affect yet but will be implemented in a future version.
+- Due to the current implementation of the argument parsing `--text` can only be a single word. This should be fixed with a future version.
