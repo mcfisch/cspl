@@ -6,7 +6,7 @@ print_synopsis() {
 print_usage() {
 echo -e "\nUsage: 
   $0 [options]
-  $0 [-m {plan|apply}]
+  $0 [-m {plan|apply|destroy}]
   $0 [-v] [-a] [-t]
   $0 [-k <key_id>] [-s <secret_key>]
   $0 [-c <aws credentials file>]
@@ -14,9 +14,9 @@ echo -e "\nUsage:
 
 Options:
   -m, --mode              Mode to run Terraform on [default: 'plan']
-  -v, --vpc [IP]          Use the give VPC for EC2 and ELB [default: off],
-                          IP defaults to '10.0.0.0' when 'vpc' submitted
-  -a, --autoscale         Enable autoscaling [default: off]
+  -v, --vpc [CIDR]        Use the give VPC for EC2 and ELB [default: off],
+                          'CIDR' defaults to '10.11.12.0/24' when omitted (TBD)
+  -a, --autoscale         Enable autoscaling [default: off] (TBD)
   -c, --credentials-file  File with AWS credentials for dot-sourcing
   -k, --key-id            AWS Access Key ID (read from env by default)
   -s, --secret-key        AWS Secret Access Key (read from env by default)
@@ -26,6 +26,7 @@ Options:
 }
 
 TF_VERSION_REQ="0.12"
+mode="plan"
 
 EXIT_GOOD=0
 EXIT_GENERAL=1
@@ -57,7 +58,13 @@ while test -n "$1" ; do
       exit ${EXIT_GOOD}
       ;;
     -m|--mode)
-      mode=$2
+      if [ "$2" == "plan" -o "$2" == "apply" -o "$2" == "destroy" ] ; then
+        mode=$2
+      else
+        echo "Error: unknown argument for 'mode': $2"
+        print_usage
+        exit ${EXIT_GENERAL}
+      fi
       shift
       ;;
     -v|--vpc)
@@ -98,5 +105,6 @@ if [ "${AWS_SECRET_ACCESS_KEY}" == "" -o "${AWS_ACCESS_KEY_ID}" == "" ] ; then
 fi
 
 check_tf_install
-
+[ -n ${text} ] && var_text="-var=html_text=${text}"
+terraform ${mode} ${var_text} 
 exit ${EXIT_GENERAL}
